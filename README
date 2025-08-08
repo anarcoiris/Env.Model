@@ -14,6 +14,14 @@ docker compose up --build
 
 Comprobar si hace falta reiniciar los contenedores de kafka y/o producer y consumer
 
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%   EXPLICACION DEL CODIGO  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+vvvvvvvvvvvvvvvvvvv  ^^^^^^^^^^^^^^^^^^^^^^^^^^^   vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+
 Los ojos: El programa encargado de ver todo lo que se mueve y sucede en algun lado de internet (Kafka - producer)
  Variables de entorno propias: timeframes, exchanges...:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
