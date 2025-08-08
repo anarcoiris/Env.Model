@@ -1,0 +1,11 @@
+
+
+Los ojos: El programa encargado de ver todo lo que se mueve y sucede en algun lado de internet (Kafka - producer)
+
+La Voz: El programa encargado de repetir todo lo que los ojos ven (Kafka - consumer)
+
+La memoria: La base de datos sobre la que La Voz guarda lo que Los Ojos ven (InfluxDB)
+
+El Brazo: El programa que sabe ejecutar ordenes en los mercados (JaviBre)
+
+El Cerebro: El modelo que utiliza La Memoria para entrenar modelos predictivos y dar ordenes a El Brazo (Evolves2.py)
