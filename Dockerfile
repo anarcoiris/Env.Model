@@ -1,6 +1,12 @@
 FROM python:3.10-slim
+
 WORKDIR /app
-COPY requirements.txt ./
+
+COPY requirements.txt .
+COPY producer.py .
+COPY consumer.py .
+COPY wait_for_kafka.py .
+
 RUN pip install --no-cache-dir -r requirements.txt
-COPY producer.py ./
-ENTRYPOINT ["python", "producer.py"]
+
+CMD ["python", "producer.py"]
