@@ -42,7 +42,7 @@ services:
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=prices
-      - EXCHANGES=binance,kucoin,bybit,coinbase
+      - EXCHANGES=binance,kucoin,bybit,coinbase,kraken
       - SYMBOLS=BTC/USDT,XMR/USDT,ETH/USDT
       - FETCH_INTERVAL=10
     depends_on:
@@ -66,6 +66,22 @@ services:
     networks:
       - market-net
     command: ["python", "consumer.py"]
+
+  evolves:
+    build: ./evolves   # o image: si ya tienes una imagen
+    container_name: evolves
+    depends_on:
+      - influxdb
+      - kafka
+      - zookeeper
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=J4twWiQSH6QZF33ZyAB9NJLoNMyrHjOlvY6UJGgczJfk-_DC3d5BFEiZzQOYC39ObPYwxF5kZTAZtzIX-Xr40Q==
+      - INFLUXDB_ORG=BreOrganization
+      - INFLUXDB_BUCKET=prices
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=prices
+    command: ["python", "evolves3.py  --symbol BTCUSDT --exchange binance --timeframe 1m --start -7d --limit 1000"]
 
 networks:
   market-net:
