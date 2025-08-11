@@ -31,7 +31,7 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=rootroot
       - DOCKER_INFLUXDB_INIT_ORG=BreOrganization
       - DOCKER_INFLUXDB_INIT_BUCKET=prices
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN='J4twWiQSH6QZF33ZyAB9NJLoNMyrHjOlvY6UJGgczJfk-_DC3d5BFEiZzQOYC39ObPYwxF5kZTAZtzIX-Xr40Q=='
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=' '
     volumes:
       - influxdb-data:/var/lib/influxdb2
     networks:
@@ -57,7 +57,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=prices
       - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN=J4twWiQSH6QZF33ZyAB9NJLoNMyrHjOlvY6UJGgczJfk-_DC3d5BFEiZzQOYC39ObPYwxF5kZTAZtzIX-Xr40Q==
+      - INFLUXDB_TOKEN= 
       - INFLUXDB_ORG=BreOrganization
       - INFLUXDB_BUCKET=prices
     depends_on:
@@ -76,7 +76,7 @@ services:
       - zookeeper
     environment:
       - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN=J4twWiQSH6QZF33ZyAB9NJLoNMyrHjOlvY6UJGgczJfk-_DC3d5BFEiZzQOYC39ObPYwxF5kZTAZtzIX-Xr40Q==
+      - INFLUXDB_TOKEN= 
       - INFLUXDB_ORG=BreOrganization
       - INFLUXDB_BUCKET=prices
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
@@ -88,3 +88,4 @@ networks:
 
 volumes:
   influxdb-data:
+
