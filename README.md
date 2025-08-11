@@ -39,12 +39,20 @@ El módulo encargado de observar datos en internet y enviarlos al sistema.
 
 Variables de entorno:
 
+
 KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
 KAFKA_TOPIC=prices
+
 EXCHANGES=binance,kucoin,bybit,coinbase,kraken
+
 SYMBOLS=BTC/USDT,XMR/USDT,ETH/USDT
+
 FETCH_INTERVAL=10
+
 TIMEFRAMES=1m,30m,4h,1d
+
+
 🗣 La Voz (Kafka - Consumer)
 Repite todo lo que Los Ojos ven, enviando los datos procesados a la base de datos.
 
