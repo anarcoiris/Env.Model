@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 # Configuration (set these as environment variables or hardcode)
 INFLUX_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
-INFLUX_TOKEN = os.getenv("INFLUXDB_TOKEN", "J4twWiQSH6QZF33ZyAB9NJLoNMyrHjOlvY6UJGgczJfk-_DC3d5BFEiZzQOYC39ObPYwxF5kZTAZtzIX-Xr40Q==")
+INFLUX_TOKEN = os.getenv("INFLUXDB_TOKEN", "")
 INFLUX_ORG = os.getenv("INFLUXDB_ORG", "BreOrganization")
 INFLUX_BUCKET = os.getenv("INFLUXDB_BUCKET", "prices")
 DAYS_TO_KEEP = int(os.getenv("DAYS_TO_KEEP", "3600"))  # Delete data older than this
@@ -28,3 +28,4 @@ def delete_old_data():
 
 if __name__ == "__main__":
     delete_old_data()
+
