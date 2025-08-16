@@ -31,57 +31,63 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=rootroot
       - DOCKER_INFLUXDB_INIT_ORG=BreOrganization
       - DOCKER_INFLUXDB_INIT_BUCKET=prices
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=' '
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN="YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA=="
     volumes:
       - influxdb-data:/var/lib/influxdb2
     networks:
       - market-net
 
-  producer:
+  prosumer:
     build: .
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=prices
-      - EXCHANGES=binance,kucoin,bybit,coinbase,kraken
+      - EXCHANGES=binance,kucoin,bybit,coinbase
       - SYMBOLS=BTC/USDT,XMR/USDT,ETH/USDT
       - FETCH_INTERVAL=10
-    depends_on:
-      - kafka
-    networks:
-      - market-net
-    command: ["python", "producer.py"]
-
-  consumer:
-    build: .
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=prices
-      - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN= 
+      - INFLUXDB_TOKEN=YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==
       - INFLUXDB_ORG=BreOrganization
       - INFLUXDB_BUCKET=prices
+      - INFLUXDB_URL=http://influxdb:8086
     depends_on:
       - kafka
       - influxdb
-    networks:
-      - market-net
-    command: ["python", "consumer.py"]
-
-  evolves:
-    build: ./evolves   # o image: si ya tienes una imagen
-    container_name: evolves
-    depends_on:
-      - influxdb
-      - kafka
       - zookeeper
-    environment:
-      - INFLUXDB_URL=http://influxdb:8086
-      - INFLUXDB_TOKEN= 
-      - INFLUXDB_ORG=BreOrganization
-      - INFLUXDB_BUCKET=prices
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=prices
-    command: ["python", "evolves3.py  --symbol BTCUSDT --exchange binance --timeframe 1m --start -7d --limit 1000"]
+    networks:
+      - market-net
+    command: ["python", "main.py"]
+
+#  consumer:
+#    build: .
+#    environment:
+#      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+#      - KAFKA_TOPIC=prices
+#      - INFLUXDB_URL=http://influxdb:8086
+#      - INFLUXDB_TOKEN=YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==
+#      - INFLUXDB_ORG=BreOrganization
+#      - INFLUXDB_BUCKET=prices
+#    depends_on:
+#      - kafka
+#      - influxdb
+#    networks:
+#      - market-net
+#    command: ["python", "consumer.py"]
+
+#  evolves:
+# build: .   # o image: si ya tienes una imagen
+# container_name: evolves
+# depends_on:
+#       - influxdb
+#       - kafka
+#       - zookeeper
+#     environment:
+#       - INFLUXDB_URL=http://influxdb:8086
+#       - INFLUXDB_TOKEN="YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA=="
+#       - INFLUXDB_ORG=BreOrganization
+#       - INFLUXDB_BUCKET=prices
+#       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+#       - KAFKA_TOPIC=prices
+#     command: ["python", "evolves3.py  --symbol BTCUSDT --exchange binance --timeframe 1m --start -7d --limit 1000"]
 
 networks:
   market-net:
@@ -89,3 +95,4 @@ networks:
 volumes:
   influxdb-data:
 
+#token YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==
