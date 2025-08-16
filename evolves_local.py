@@ -15,18 +15,18 @@ import os
 # ------------------------------
 # Nueva función: leer datos desde InfluxDB
 # ------------------------------
-def load_data_from_influx(symbol="BTCUSDT", exchange="binance", timeframe="1m",
+def load_data_from_influx(symbol="BTCUSDT", exchange="binance", timeframe="4h",
                           measurement="prices", field="close",
-                          start="-27d", limit=42000):
+                          start="-27d", limit=100):
     """
     Lee datos históricos desde InfluxDB y devuelve un array como simulate_ou.
     - start: periodo de tiempo que queremos traer, ej. "-7d", "-1h"
     - limit: número máximo de puntos
     """
-    INFLUX_URL = os.getenv('INFLUXDB_URL', 'http://influxdb:8086')
-    INFLUX_TOKEN = os.getenv('INFLUXDB_TOKEN', '')
-    INFLUX_ORG = os.getenv('INFLUXDB_ORG', '')
-    INFLUX_BUCKET = os.getenv('INFLUXDB_BUCKET', '')
+    INFLUX_URL = 'http://localhost:8086'
+    INFLUX_TOKEN = 'YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA=='
+    INFLUX_ORG = 'BreOrganization'
+    INFLUX_BUCKET = 'prices'
 
     query = f'''
     from(bucket: "{INFLUX_BUCKET}")
@@ -222,8 +222,8 @@ def main_evolution(pop_size, gens, train_loader, val_loader):
 # ------------------------------
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evolución de hiperparámetros de SDE NN")
-    parser.add_argument("--pop_size", type=int, default=2000, help="Tamaño de población")
-    parser.add_argument("--gens", type=int, default=8, help="Número de generaciones")
+    parser.add_argument("--pop_size", type=int, default=20, help="Tamaño de población")
+    parser.add_argument("--gens", type=int, default=10, help="Número de generaciones")
     parser.add_argument("--seed", type=int, default=None, help="Semilla aleatoria")
     args = parser.parse_args()
 
@@ -237,8 +237,8 @@ if __name__ == "__main__":
         symbol="BTCUSDT",
         exchange="binance",
         timeframe="1m",
-        start="-7d",
-        limit=1000
+        start="-27d",
+        limit=2000
     )
 
     train_loader, val_loader = prepare_dataloaders(data)

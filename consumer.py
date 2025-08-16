@@ -8,7 +8,7 @@ BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'kafka:9092')
 TOPIC = os.getenv('KAFKA_TOPIC', 'prices')
 
 INFLUX_URL = os.getenv('INFLUXDB_URL', 'http://influxdb:8086')
-INFLUX_TOKEN = os.getenv('INFLUXDB_TOKEN', '')
+INFLUX_TOKEN = os.getenv('INFLUXDB_TOKEN', 'YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==')
 INFLUX_ORG = os.getenv('INFLUXDB_ORG', '')
 INFLUX_BUCKET = os.getenv('INFLUXDB_BUCKET', '')
 
