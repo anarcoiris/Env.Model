@@ -1,0 +1,8 @@
+numpy
+pandas
+matplotlib
+torch
+deap
+tqdm
+influxdb-client
+requests

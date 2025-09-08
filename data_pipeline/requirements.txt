@@ -1,0 +1,3 @@
+ccxt
+kafka-python
+influxdb-client

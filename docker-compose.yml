@@ -1,6 +1,7 @@
-# version: '3.8'
+version: '3.8'
 
 services:
+  # -- INFRAESTRUCTURA BASE --
   zookeeper:
     image: bitnami/zookeeper:3.8
     environment:
@@ -25,74 +26,65 @@ services:
     image: influxdb:2.7
     ports:
       - "8086:8086"
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=root
-      - DOCKER_INFLUXDB_INIT_PASSWORD=rootroot
-      - DOCKER_INFLUXDB_INIT_ORG=BreOrganization
-      - DOCKER_INFLUXDB_INIT_BUCKET=prices
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN="YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA=="
     volumes:
       - influxdb-data:/var/lib/influxdb2
+    env_file: .env.influxdb
     networks:
       - market-net
 
-  prosumer:
-    build: .
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - KAFKA_TOPIC=prices
-      - EXCHANGES=binance,kucoin,bybit,coinbase
-      - SYMBOLS=BTC/USDT,XMR/USDT,ETH/USDT
-      - FETCH_INTERVAL=10
-      - INFLUXDB_TOKEN=YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==
-      - INFLUXDB_ORG=BreOrganization
-      - INFLUXDB_BUCKET=prices
-      - INFLUXDB_URL=http://influxdb:8086
+  # -- COMPONENTES DEL MODELO --
+
+  #  Los Ojos y  La Voz (Productor y Consumidor de datos)
+  data_pipeline:
+    build:
+      context: ./data_pipeline
+    container_name: data_pipeline
     depends_on:
       - kafka
       - influxdb
-      - zookeeper
+    env_file:
+      - .env.pipeline
+      - .env.influxdb
     networks:
       - market-net
-    command: ["python", "main.py"]
+    command: >
+      sh -c "python producer.py & python consumer.py && fg"
 
-#  consumer:
-#    build: .
-#    environment:
-#      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-#      - KAFKA_TOPIC=prices
-#      - INFLUXDB_URL=http://influxdb:8086
-#      - INFLUXDB_TOKEN=YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==
-#      - INFLUXDB_ORG=BreOrganization
-#      - INFLUXDB_BUCKET=prices
-#    depends_on:
-#      - kafka
-#      - influxdb
-#    networks:
-#      - market-net
-#    command: ["python", "consumer.py"]
+  #  El Brazo (API para ejecutar órdenes)
+  arm:
+    build:
+      context: ./arm
+    container_name: arm
+    ports:
+      - "8000:8000" # Expone la API en http://localhost:8000
+    volumes:
+      - ./arm_db:/data # Persiste la base de datos de órdenes
+    env_file: .env.arm
+    networks:
+      - market-net
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
-#  evolves:
-# build: .   # o image: si ya tienes una imagen
-# container_name: evolves
-# depends_on:
-#       - influxdb
-#       - kafka
-#       - zookeeper
-#     environment:
-#       - INFLUXDB_URL=http://influxdb:8086
-#       - INFLUXDB_TOKEN="YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA=="
-#       - INFLUXDB_ORG=BreOrganization
-#       - INFLUXDB_BUCKET=prices
-#       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-#       - KAFKA_TOPIC=prices
-#     command: ["python", "evolves3.py  --symbol BTCUSDT --exchange binance --timeframe 1m --start -7d --limit 1000"]
+  #  El Cerebro (Modelo evolutivo que da órdenes)
+  brain:
+    build:
+      context: ./brain
+    container_name: brain
+    depends_on:
+      - arm
+      - influxdb
+    env_file:
+      - .env.influxdb
+      - .env.arm # Para que sepa la URL y la clave del Brazo
+    networks:
+      - market-net
+    # Comando para ejecutar el cerebro. Puedes añadir tus propios argumentos aquí.
+    command: >
+      sh -c "sleep 20 && # Espera a que los otros servicios arranquen bien
+             python evolves_with_arm.py --symbol BTCUSDT --exchange binance --timeframe 1m"
 
 networks:
   market-net:
+    driver: bridge
 
 volumes:
   influxdb-data:
-
-#token YiiARrYB9nYSTBoXrstUVGjv2I5EoUDwagXVxG4_n-7fJKh72lw3o8P_R9XfTtDRSBF3kdcYbroi9ilIeeNyeA==
