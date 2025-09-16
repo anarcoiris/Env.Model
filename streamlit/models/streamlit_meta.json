@@ -38,11 +38,9 @@
     "fib_1000",
     "dist_fib_1000",
     "td_buy_setup",
-    "td_sell_setup",
-    "vp_poc",
-    "dist_vp"
+    "td_sell_setup"
   ],
   "seq_len": 32,
-  "horizon": 10,
-  "hidden": 64
+  "horizon": 200,
+  "hidden": 256
 }

@@ -92,21 +92,3 @@ def render():
     st.markdown('---')
     if DATA_JSON.exists():
         st.write(f"Local JSON: {DATA_JSON} (size: {DATA_JSON.stat().st_size} bytes)")
-
-
-
-# --- Auto compute minimal indicators helper ---
-if st.button("Compute minimal indicators (EMA/RSI/ATR) - auto"):
-    try:
-        df_in = st.session_state.get("fetched_df") or st.session_state.get("fetched_df_full")
-        if df_in is None:
-            st.error("No data in session to compute indicators.")
-        else:
-            from utils import compute_minimal_indicators
-            df_feat = compute_minimal_indicators(df_in)
-            st.session_state["fetched_df_full"] = df_feat.copy()
-            st.session_state["fetched_df"] = df_feat.copy()
-            st.success("Computed minimal indicators and stored in session as fetched_df/full")
-            st.dataframe(df_feat.head(20))
-    except Exception as e:
-        st.error("Could not compute minimal indicators: " + str(e))

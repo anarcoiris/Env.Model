@@ -1,17 +1,4 @@
 # tabs/trading_tab.py
-"""
-Trading tab (Streamlit)
-
-Características principales:
-- Config UI: paper/mainnet, risk limits, sizing, slippage, tick quantize.
-- Fetch OHLCV via CCXT (con sandbox support).
-- Prepara history buffer y features para el modelo.
-- Calcula una señal puntual con el modelo (predict -> threshold).
-- Ejecuta orden: modo paper (simula y guarda ledger) o modo live (ccxt).
-- Ledger persistente: trades_ledger.csv
-- Utilities: quantize price/amount using market precision, safe checks.
-"""
-
 import streamlit as st
 from pathlib import Path
 import pandas as pd
@@ -91,9 +78,9 @@ def get_market_precision(exchange, symbol: str):
             lot = m["precision"].get("amount", None)
         # fallback: try limits->stepSize
         if tick is None and isinstance(m.get("limits"), dict):
-            if isinstance(m["limits"].get("price", {}), dict):
+            if isinstance(m["limits"].get("price"), dict):
                 tick = m["limits"]["price"].get("min", None)
-            if isinstance(m["limits"].get("amount", {}), dict):
+            if isinstance(m["limits"].get("amount"), dict):
                 lot = m["limits"]["amount"].get("min", None)
 
         # Convert to rounded tick if possible
@@ -291,7 +278,7 @@ def render():
         mode = st.selectbox("Mode", ["Paper/Testnet (sandbox)", "Mainnet"], index=0)
         exchange_id = st.text_input("Exchange id (ccxt)", value="binance")
         symbol = st.text_input("Symbol", value="BTC/USDT")
-        timeframe = st.selectbox("Timeframe", ["1m", "5m", "5m", "15m", "30m", "1h", "4h", "1d"], index=5)
+        timeframe = st.selectbox("Timeframe", ["1m", "5m", "15m", "30m", "1h", "4h", "1d"], index=5)
         api_key = st.text_input("API Key", value="", type="password")
         api_secret = st.text_input("API Secret", value="", type="password")
     with col2:
