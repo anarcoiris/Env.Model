@@ -1,0 +1,9 @@
+ccxt
+kafka-python
+influxdb-client
+numpy
+pandas
+matplotlib
+torch
+deap
+tqdm
