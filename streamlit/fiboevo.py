@@ -905,10 +905,87 @@ def save_model(model: nn.Module, path_model: Path, meta: Optional[dict] = None, 
     LOGGER.info("Saved model to %s and meta to %s", path_model, path_meta)
 
 
-def load_model(path_model: Path, input_size: int, hidden: int, device: torch.device) -> LSTM2Head:
-    model = LSTM2Head(input_size=input_size, hidden_size=hidden).to(device)
-    state = torch.load(path_model, map_location=device)
-    model.load_state_dict(state)
+def load_model(path_model: Path, input_size: Optional[int] = None, hidden: Optional[int] = None, device: Optional[torch.device] = None) -> LSTM2Head:
+    """
+    Carga un state_dict y reconstruye un LSTM2Head.
+    - path_model: ruta al .pt/.pth con state_dict.
+    - input_size: (opcional) tamaño de features de entrada; si no se pasa intenta inferirlo.
+    - hidden: (opcional) tamaño oculto (hidden_size); si no se pasa se intenta inferir.
+    - device: (opcional) torch.device; por defecto CPU.
+    """
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    path_model = Path(path_model)
+    if not path_model.exists():
+        raise FileNotFoundError(f"Model not found: {path_model}")
+
+    state = torch.load(str(path_model), map_location=device)
+    # If the saved object is a full dict with other keys (e.g., {"model_state": state_dict}), try to find a state_dict
+    if not any(isinstance(v, torch.Tensor) for v in state.values()):
+        # try common containers
+        if "state_dict" in state:
+            state = state["state_dict"]
+        elif "model_state_dict" in state:
+            state = state["model_state_dict"]
+        # else assume it's already a state_dict-like mapping
+
+    # Normalize keys (drop 'module.' if present from DataParallel)
+    normalized = {}
+    for k, v in state.items():
+        nk = k
+        if k.startswith("module."):
+            nk = k[len("module.") :]
+        normalized[nk] = v
+    state = normalized
+
+    # Try to infer hidden from head linear weight shapes
+    inferred_hidden = None
+    if hidden is None:
+        # head_ret.0.weight has shape (hidden//2, hidden) in LSTM2Head defined earlier
+        possible_keys = ["head_ret.0.weight", "head_ret.2.weight", "head_ret.weight"]
+        for k in possible_keys:
+            if k in state:
+                w = state[k]
+                # weight shape (out_features, in_features) => in_features == hidden
+                if isinstance(w, torch.Tensor) and w.ndim == 2:
+                    inferred_hidden = int(w.shape[1])
+                    break
+    # fallback: try to infer from lstm weight shape: lstm.weight_ih_l0 shape = (4*hidden, input_size)
+    inferred_input = None
+    if input_size is None:
+        if "lstm.weight_ih_l0" in state:
+            w = state["lstm.weight_ih_l0"]
+            if isinstance(w, torch.Tensor) and w.ndim == 2:
+                inferred_hidden = inferred_hidden or (int(w.shape[0]) // 4)
+                inferred_input = int(w.shape[1])
+
+    # assign inferred if provided
+    if hidden is None and inferred_hidden is not None:
+        hidden = int(inferred_hidden)
+    if input_size is None and inferred_input is not None:
+        input_size = int(inferred_input)
+
+    if hidden is None or input_size is None:
+        # As last resort, try to find any linear layer to infer input features for safety
+        # Look for any parameter that looks like a Linear weight with shape (out, in)
+        if hidden is None:
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor) and v.ndim == 2 and v.shape[1] <= 2048:
+                    # guess v.shape[1] as hidden if plausible
+                    hidden = int(v.shape[1])
+                    break
+        if input_size is None:
+            # try to infer from 'head_ret.0.weight' out_features -> hidden//2; can't infer input_size here reliably
+            # If still unknown, raise informative error
+            raise RuntimeError("Could not infer model dimensions (input_size or hidden). Please call load_model(..., input_size=..., hidden=...).")
+
+    # Build model and load state
+    model = LSTM2Head(input_size=int(input_size), hidden_size=int(hidden)).to(device)
+    try:
+        model.load_state_dict(state)
+    except Exception:
+        # try strict=False if shapes slightly mismatch
+        model.load_state_dict(state, strict=False)
     return model
 
 

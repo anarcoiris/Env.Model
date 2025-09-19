@@ -2,7 +2,6 @@ import streamlit as st
 import importlib
 import numpy as np
 import pandas as pd
-pd.np = np
 
 st.set_page_config(page_title="FiboEvo — Control Panel", layout="wide")
 
@@ -12,15 +11,22 @@ st.markdown("Interfaz modular para controlar datos, entrenamiento, evolución, b
 # persistent session state
 if "fetched_df" not in st.session_state:
     st.session_state["fetched_df"] = None
+if "fetched_df_full" not in st.session_state:
+    st.session_state["fetched_df_full"] = None
+if "history_buffer" not in st.session_state:
+    st.session_state["history_buffer"] = None
+if "warmup_count" not in st.session_state:
+    st.session_state["warmup_count"] = 0
+
 if "model" not in st.session_state:
     st.session_state["model"] = None
 if "scaler_path" not in st.session_state:
     st.session_state["scaler_path"] = None
-if "meta" not in st.session_state:
-    st.session_state["meta"] = None
+# meta should be a dict (trading_tab expects dict-like access)
+if "meta" not in st.session_state or st.session_state.get("meta") is None:
+    st.session_state["meta"] = {}
 
-tabs = ["📊 Datos", "⚙️ Configuración", "🤖 Entrenamiento", "🧬 Evolución", "📈 Backtest", "🚀 Trading Live", "📁 Artefactos"]
-sel = st.sidebar.radio("Navegación", tabs)
+st.set_page_config(layout="wide")
 
 # Global config store in session_state for tabs to share
 if "config" not in st.session_state:
@@ -34,6 +40,9 @@ if "config" not in st.session_state:
         "evolve_pop": 20,
         "evolve_gens": 10,
     }
+
+tabs = ["📊 Datos", "⚙️ Configuración", "🤖 Entrenamiento", "🧬 Evolución", "📈 Backtest", "🚀 Trading Live", "📁 Artefactos"]
+sel = st.sidebar.radio("Navegación", tabs)
 
 def _import_and_render(module_name: str, fn: str = "render"):
     try:
